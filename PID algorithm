@@ -1,0 +1,82 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date:    16:42:20 04/17/2014 
+-- Design Name: 
+-- Module Name:    PIDcontrol - Behavioral 
+-- Project Name: 
+-- Target Devices: 
+-- Tool versions: 
+-- Description: 
+--
+-- Dependencies: 
+--
+-- Revision: 
+-- Revision 0.01 - File Created
+-- Additional Comments: 
+--
+----------------------------------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL; 
+use IEEE.STD_LOGIC_ARITH.ALL;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx primitives in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity PIDcontrol is
+	PORT (input: IN std_logic_vector(15 downto 0); --2bytes INPUT
+			output: OUT std_logic_vector(23 downto 0); --2bytes OUTPUT
+			clock: IN std_logic; --50MHz internal clock
+			reset: IN std_logic); --resets initial values
+end PIDcontrol;
+
+architecture Behavior of PIDcontrol is
+	SIGNAL Uk:   std_logic_vector(23 downto 0) := "000000000000000000000000"; --2 bytes
+	SIGNAL Uk1: std_logic_vector(23 downto 0) := "000000000000000000000000"; --2 bytes
+	SIGNAL Ek:   std_logic_vector(15 downto 0) := "0000000000000000"; --2 bytes
+	SIGNAL Ek1: std_logic_vector(15 downto 0) := "0000000000000000"; --2 bytes
+	SIGNAL Ek2: std_logic_vector(15 downto 0) := "0000000000000000"; --2 bytes
+--	SIGNAL input, output: std_logic_vector(15 downto 0);
+	CONSTANT k0: std_logic_vector(7 downto 0) := "00000001"; --1 byte
+	CONSTANT k1: std_logic_vector(7 downto 0) := "00000001"; --1 byte
+	CONSTANT k2: std_logic_vector(7 downto 0) := "00000001"; --1 byte
+	CONSTANT kp: std_logic_vector(7 downto 0) := "00000001"; --1 byte
+	CONSTANT ki: std_logic_vector(7 downto 0) := "00000001"; --1 byte
+	CONSTANT kd: std_logic_vector(7 downto 0) := "00000001"; --1 byte
+	CONSTANT T: std_logic_vector(7 downto 0) := "00000001"; --1 byte
+
+begin
+
+--	k0 <= kp+(1+(kd/T));
+--	k1 <= kp+(-1+(T/ki)-2*(kd/T));
+--	k2 <= kp+(kd/T);
+	Ek <= input;
+	
+process (clock)
+	begin
+	if (clock'event and clock = '1') then
+		if reset = '1' then
+			Uk1 <= "000000000000000000000000";
+			Ek1 <= "0000000000000000";
+			Ek2 <= "0000000000000000";
+		elsif reset = '0' then
+			Ek2 <= Ek1;
+			Ek1 <= Ek;
+			Uk1 <= Uk;
+			Uk <= Uk1+(k0*Ek)+(k1*Ek1)+(k2*Ek2);
+		end if;
+	end if;
+end process;
+	output <= Uk;
+
+end Behavior;
+
+
